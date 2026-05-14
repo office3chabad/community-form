@@ -471,7 +471,7 @@ export default function CommunityForm() {
             <button type="button" onClick={() => setYahrzeits(prev => [...prev, emptyYahrzeit()])}
               className="mt-2 flex items-center gap-2 text-sm font-semibold px-4 py-3 rounded-xl border-2 border-dashed border-gray-300 text-gray-500 hover:border-[#511C24] hover:text-[#511C24] transition-all duration-200 w-full justify-center group">
               <span className="text-lg group-hover:scale-125 transition-transform duration-200">+</span>
-              הוסף יארצייט
+              {byGender(gender, "הוסף יארצייט", "הוסיפי יארצייט", "הוסף/י יארצייט")}
             </button>
           </div>
 
