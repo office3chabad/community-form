@@ -9,6 +9,20 @@ const HEBREW_MONTHS = ["תשרי","חשון","כסלו","טבת","שבט","אד�
 const HEBREW_YEARS = ["תש\"כ","תשכ\"א","תשכ\"ב","תשכ\"ג","תשכ\"ד","תשכ\"ה","תשכ\"ו","תשכ\"ז","תשכ\"ח","תשכ\"ט","תש\"ל","תשל\"א","תשל\"ב","תשל\"ג","תשל\"ד","תשל\"ה","תשל\"ו","תשל\"ז","תשל\"ח","תשל\"ט","תש\"מ","תשמ\"א","תשמ\"ב","תשמ\"ג","תשמ\"ד","תשמ\"ה","תשמ\"ו","תשמ\"ז","תשמ\"ח","תשמ\"ט","תש\"נ","תשנ\"א","תשנ\"ב","תשנ\"ג","תשנ\"ד","תשנ\"ה","תשנ\"ו","תשנ\"ז","תשנ\"ח","תשנ\"ט","תש\"ס","תשס\"א","תשס\"ב","תשס\"ג","תשס\"ד","תשס\"ה","תשס\"ו","תשס\"ז","תשס\"ח","תשס\"ט","תש\"ע","תשע\"א","תשע\"ב","תשע\"ג","תשע\"ד","תשע\"ה","תשע\"ו","תשע\"ז","תשע\"ח","תשע\"ט","תש\"פ","תשפ\"א","תשפ\"ב","תשפ\"ג","תשפ\"ד","תשפ\"ה","תשפ\"ו","תשפ\"ז"];
 const YAHRZEIT_RELATIONS = ["אבא","אמא","סבא","סבתא","אח","אחות","בן זוג","חבר קרוב","רב","אחר"];
 
+// Fixed sparkle positions to avoid hydration mismatch
+const SPARKLES = [
+  { top:"12%", left:"6%",  delay:"0s",    size:"3px" },
+  { top:"22%", left:"88%", delay:"0.6s",  size:"2px" },
+  { top:"38%", left:"3%",  delay:"1.1s",  size:"4px" },
+  { top:"55%", left:"92%", delay:"0.3s",  size:"2px" },
+  { top:"70%", left:"7%",  delay:"1.4s",  size:"3px" },
+  { top:"80%", left:"85%", delay:"0.8s",  size:"2px" },
+  { top:"10%", left:"45%", delay:"1.8s",  size:"2px" },
+  { top:"90%", left:"40%", delay:"0.4s",  size:"3px" },
+  { top:"48%", left:"95%", delay:"2.1s",  size:"2px" },
+  { top:"30%", left:"50%", delay:"1.6s",  size:"2px" },
+];
+
 interface HebrewDate { day: string; month: string; year: string; }
 interface Child {
   firstName: string; lastName: string; gender: string;
@@ -31,22 +45,37 @@ const emptyYahrzeit = (): Yahrzeit => ({
 const inp = "w-full border border-gray-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#511C24]/25 focus:border-[#511C24] bg-white transition-all duration-200";
 const sel = "w-full border border-gray-200 rounded-xl px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#511C24]/25 focus:border-[#511C24] bg-white transition-all duration-200";
 const lbl = "block text-sm font-semibold text-gray-700 mb-1.5";
+const card = "bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-5 transition-shadow duration-300 hover:shadow-md";
+const sectionTitle = "text-xl font-bold text-center mb-6 pb-3 border-b border-gray-100";
 
-function HebrewDateFields({ value, onChange, required }: {
-  value: HebrewDate; onChange: (v: HebrewDate) => void; required?: boolean;
-}) {
+function RadioGroup({ name, value, onChange }: { name: string; value: string; onChange: (v: string) => void }) {
   return (
-    <div className="grid grid-cols-3 gap-2 mt-2 animate-[fadeUp_0.3s_ease_both]">
+    <div className="flex gap-6 mt-1">
+      {["זכר", "נקבה"].map(g => (
+        <label key={g} className="flex items-center gap-2.5 cursor-pointer group" onClick={() => onChange(g)}>
+          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${value === g ? "border-[#511C24] bg-[#511C24]" : "border-gray-300 group-hover:border-[#511C24]"}`}>
+            {value === g && <div className="w-2 h-2 rounded-full bg-white" />}
+          </div>
+          <span className="text-sm font-medium">{g}</span>
+        </label>
+      ))}
+    </div>
+  );
+}
+
+function HebrewDateFields({ value, onChange }: { value: HebrewDate; onChange: (v: HebrewDate) => void }) {
+  return (
+    <div className="grid grid-cols-3 gap-2 mt-2">
       <div>
-        <label className="text-xs text-gray-500 block mb-1">יום {required && <span className="text-red-500">*</span>}</label>
-        <select value={value.day} onChange={e => onChange({ ...value, day: e.target.value })} className={sel} required={required}>
+        <label className="text-xs text-gray-500 block mb-1">יום <span className="text-red-500">*</span></label>
+        <select value={value.day} onChange={e => onChange({ ...value, day: e.target.value })} className={sel}>
           <option value="">בחר</option>
           {HEBREW_DAYS.map(d => <option key={d} value={d}>{d}</option>)}
         </select>
       </div>
       <div>
-        <label className="text-xs text-gray-500 block mb-1">חודש {required && <span className="text-red-500">*</span>}</label>
-        <select value={value.month} onChange={e => onChange({ ...value, month: e.target.value })} className={sel} required={required}>
+        <label className="text-xs text-gray-500 block mb-1">חודש <span className="text-red-500">*</span></label>
+        <select value={value.month} onChange={e => onChange({ ...value, month: e.target.value })} className={sel}>
           <option value="">בחר</option>
           {HEBREW_MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
         </select>
@@ -54,7 +83,7 @@ function HebrewDateFields({ value, onChange, required }: {
       <div>
         <label className="text-xs text-gray-500 block mb-1">שנה</label>
         <select value={value.year} onChange={e => onChange({ ...value, year: e.target.value })} className={sel}>
-          <option value="">לא יודע</option>
+          <option value="">לא יודע/ת</option>
           {HEBREW_YEARS.map(y => <option key={y} value={y}>{y}</option>)}
         </select>
       </div>
@@ -62,7 +91,8 @@ function HebrewDateFields({ value, onChange, required }: {
   );
 }
 
-function BirthdaySection({ onlyGregorian, setOnlyGregorian, gregorian, setGregorian, hebrew, setHebrew }: {
+function BirthdaySection({ label = "תאריך לידה", onlyGregorian, setOnlyGregorian, gregorian, setGregorian, hebrew, setHebrew }: {
+  label?: string;
   onlyGregorian: boolean; setOnlyGregorian: (v: boolean) => void;
   gregorian: string; setGregorian: (v: string) => void;
   hebrew: HebrewDate; setHebrew: (v: HebrewDate) => void;
@@ -71,24 +101,21 @@ function BirthdaySection({ onlyGregorian, setOnlyGregorian, gregorian, setGregor
     <div>
       {!onlyGregorian && (
         <div className="animate-[fadeUp_0.3s_ease_both]">
-          <label className={lbl}>תאריך לידה עברי <span className="text-red-500">*</span></label>
-          <HebrewDateFields value={hebrew} onChange={setHebrew} required />
+          <label className={lbl}>{label} עברי <span className="text-red-500">*</span></label>
+          <HebrewDateFields value={hebrew} onChange={setHebrew} />
         </div>
       )}
       {onlyGregorian && (
         <div className="animate-[fadeUp_0.3s_ease_both]">
-          <label className={lbl}>תאריך לידה לועזי <span className="text-red-500">*</span></label>
-          <input type="date" value={gregorian} onChange={e => setGregorian(e.target.value)} className={inp} dir="ltr" required />
+          <label className={lbl}>{label} לועזי <span className="text-red-500">*</span></label>
+          <input type="date" value={gregorian} onChange={e => setGregorian(e.target.value)} className={inp} dir="ltr" />
         </div>
       )}
-      <label className="flex items-center gap-2 mt-3 cursor-pointer select-none group">
-        <div className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all duration-200 ${onlyGregorian ? "bg-[#511C24] border-[#511C24]" : "border-gray-400 group-hover:border-[#511C24]"}`}
-          onClick={() => setOnlyGregorian(!onlyGregorian)}>
+      <label className="flex items-center gap-2 mt-3 cursor-pointer select-none group" onClick={() => setOnlyGregorian(!onlyGregorian)}>
+        <div className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all duration-200 shrink-0 ${onlyGregorian ? "bg-[#511C24] border-[#511C24]" : "border-gray-400 group-hover:border-[#511C24]"}`}>
           {onlyGregorian && <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 10 8"><path d="M1 4l3 3 5-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
         </div>
-        <span className="text-sm text-gray-600" onClick={() => setOnlyGregorian(!onlyGregorian)}>
-          אני יודע/ת רק את התאריך הלועזי
-        </span>
+        <span className="text-sm text-gray-500">אני יודע/ת רק את התאריך הלועזי</span>
       </label>
     </div>
   );
@@ -96,21 +123,18 @@ function BirthdaySection({ onlyGregorian, setOnlyGregorian, gregorian, setGregor
 
 function Stepper({ value, onChange }: { value: number; onChange: (n: number) => void }) {
   return (
-    <div className="flex items-center gap-4 mt-1">
+    <div className="flex items-center gap-5 mt-1">
       <button type="button" onClick={() => onChange(Math.max(0, value - 1))}
-        className="w-10 h-10 rounded-full border-2 border-[#511C24] text-[#511C24] font-bold text-xl flex items-center justify-center hover:bg-[#511C24] hover:text-white transition-all duration-200 active:scale-95 disabled:opacity-30"
+        className="w-11 h-11 rounded-full border-2 border-[#511C24] text-[#511C24] font-bold text-xl flex items-center justify-center hover:bg-[#511C24] hover:text-white transition-all duration-200 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed"
         disabled={value === 0}>−</button>
-      <span className="text-2xl font-bold w-8 text-center tabular-nums">{value}</span>
+      <span className="text-3xl font-bold w-8 text-center tabular-nums" style={{ color: "#511C24" }}>{value}</span>
       <button type="button" onClick={() => onChange(Math.min(15, value + 1))}
-        className="w-10 h-10 rounded-full border-2 border-[#511C24] text-[#511C24] font-bold text-xl flex items-center justify-center hover:bg-[#511C24] hover:text-white transition-all duration-200 active:scale-95 disabled:opacity-30"
+        className="w-11 h-11 rounded-full border-2 border-[#511C24] text-[#511C24] font-bold text-xl flex items-center justify-center hover:bg-[#511C24] hover:text-white transition-all duration-200 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed"
         disabled={value === 15}>+</button>
-      {value > 0 && <span className="text-sm text-gray-400">ילדים</span>}
+      {value > 0 && <span className="text-sm text-gray-400 animate-[fadeIn_0.3s_ease_both]">{value === 1 ? "ילד/ה אחד/ת" : `${value} ילדים`}</span>}
     </div>
   );
 }
-
-const card = "bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-5 transition-shadow duration-300 hover:shadow-md";
-const sectionTitle = "text-xl font-bold text-center mb-6 pb-3 border-b border-gray-100";
 
 export default function CommunityForm() {
   const router = useRouter();
@@ -123,6 +147,8 @@ export default function CommunityForm() {
   const [email, setEmail] = useState("");
   const [address, setAddress] = useState("");
   const [gender, setGender] = useState("");
+
+  const [noSpouse, setNoSpouse] = useState(false);
   const [spouseName, setSpouseName] = useState("");
   const [spousePhone, setSpousePhone] = useState("");
 
@@ -153,10 +179,13 @@ export default function CommunityForm() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-
-    if (!firstName || !lastName || !phone || !email || !address || !gender || !spouseName || !spousePhone) {
+    if (!firstName || !lastName || !phone || !email || !address || !gender) {
       setFormError("נא למלא את כל שדות החובה המסומנים ב-*");
       window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+    if (!noSpouse && (!spouseName || !spousePhone)) {
+      setFormError("נא למלא שם וטלפון של בן/בת זוג, או לסמן 'אין לי בן/בת זוג'");
       return;
     }
     if (!onlyGregorian && (!hebrewBirthday.day || !hebrewBirthday.month)) {
@@ -169,18 +198,9 @@ export default function CommunityForm() {
     }
     for (let i = 0; i < children.length; i++) {
       const c = children[i];
-      if (!c.firstName || !c.gender) {
-        setFormError(`נא למלא את כל פרטי ילד/ה ${i + 1}`);
-        return;
-      }
-      if (!c.onlyGregorian && (!c.hebrew.day || !c.hebrew.month)) {
-        setFormError(`נא למלא תאריך לידה עברי לילד/ה ${i + 1}`);
-        return;
-      }
-      if (c.onlyGregorian && !c.birthdayGregorian) {
-        setFormError(`נא למלא תאריך לידה לילד/ה ${i + 1}`);
-        return;
-      }
+      if (!c.firstName || !c.gender) { setFormError(`נא למלא את כל פרטי ילד/ה ${i + 1}`); return; }
+      if (!c.onlyGregorian && (!c.hebrew.day || !c.hebrew.month)) { setFormError(`נא למלא תאריך לידה עברי לילד/ה ${i + 1}`); return; }
+      if (c.onlyGregorian && !c.birthdayGregorian) { setFormError(`נא למלא תאריך לידה לילד/ה ${i + 1}`); return; }
     }
 
     setFormError("");
@@ -191,15 +211,14 @@ export default function CommunityForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           firstName, lastName, phone, email, address, gender,
-          spouseName, spousePhone,
+          spouseName: noSpouse ? "" : spouseName,
+          spousePhone: noSpouse ? "" : spousePhone,
           birthdayGregorian: onlyGregorian ? birthdayGregorian : "",
           hebrewDay: onlyGregorian ? "" : hebrewBirthday.day,
           hebrewMonth: onlyGregorian ? "" : hebrewBirthday.month,
           hebrewYear: onlyGregorian ? "" : hebrewBirthday.year,
           children: children.map(c => ({
-            firstName: c.firstName,
-            lastName: c.lastName || lastName,
-            gender: c.gender,
+            firstName: c.firstName, lastName: c.lastName || lastName, gender: c.gender,
             birthdayGregorian: c.onlyGregorian ? c.birthdayGregorian : "",
             hebrewDay: c.onlyGregorian ? "" : c.hebrew.day,
             hebrewMonth: c.onlyGregorian ? "" : c.hebrew.month,
@@ -224,20 +243,60 @@ export default function CommunityForm() {
   }
 
   return (
-    <main className="min-h-screen py-10 px-4">
+    <main className="min-h-screen py-8 px-4">
       <div className="max-w-2xl mx-auto">
 
-        {/* Header */}
-        <div className="text-center mb-10 animate-[fadeUp_0.6s_ease_both]">
-          <div className="inline-block transition-transform duration-300 hover:scale-105">
-            <Image src="/logo.png" alt="חב״ד רמת בית שמש ג׳" width={200} height={255} className="mx-auto mb-5 drop-shadow-sm" />
+        {/* ===== ANIMATED HEADER ===== */}
+        <div className="relative overflow-hidden rounded-3xl mb-8 text-white text-center pt-10 pb-9 px-6 animate-[fadeUp_0.7s_ease_both]"
+          style={{ background: "linear-gradient(150deg, #1A0810 0%, #3A0F18 30%, #511C24 65%, #7A2B35 100%)" }}>
+
+          {/* Glow orbs */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 rounded-full pointer-events-none"
+            style={{ background: "radial-gradient(circle, rgba(204,127,24,0.22) 0%, transparent 70%)", animation: "glow-pulse 3.5s ease-in-out infinite" }} />
+          <div className="absolute top-1/4 right-1/4 w-40 h-40 rounded-full pointer-events-none"
+            style={{ background: "radial-gradient(circle, rgba(142,48,64,0.35) 0%, transparent 70%)", animation: "glow-pulse 5s ease-in-out infinite 1s" }} />
+
+          {/* Sparkle dots */}
+          {SPARKLES.map((s, i) => (
+            <div key={i} className="absolute rounded-full bg-amber-300 pointer-events-none"
+              style={{ top: s.top, left: s.left, width: s.size, height: s.size, animation: `twinkle 2.5s ease-in-out infinite ${s.delay}` }} />
+          ))}
+
+          {/* Decorative ring behind logo */}
+          <div className="relative inline-block mb-2">
+            <div className="absolute inset-0 rounded-full pointer-events-none"
+              style={{ background: "radial-gradient(circle, rgba(204,127,24,0.3) 30%, transparent 70%)", filter: "blur(12px)", animation: "glow-pulse 2.8s ease-in-out infinite" }} />
+            <div style={{ animation: "float 4s ease-in-out infinite" }}>
+              <Image src="/logo.png" alt="חב״ד רמת בית שמש ג׳" width={200} height={255}
+                className="relative mx-auto drop-shadow-2xl" style={{ filter: "drop-shadow(0 8px 24px rgba(204,127,24,0.35))" }} />
+            </div>
           </div>
-          <h1 className="text-3xl font-extrabold" style={{ color: "#511C24" }}>
+
+          {/* Ornamental line */}
+          <div className="flex items-center justify-center gap-3 mb-3 mt-1">
+            <div className="h-px w-12 bg-amber-400/40" />
+            <span style={{ color: "rgba(204,127,24,0.7)", fontSize: "18px" }}>✦</span>
+            <div className="h-px w-12 bg-amber-400/40" />
+          </div>
+
+          {/* Title */}
+          <h1 className="text-3xl font-extrabold tracking-tight animate-[fadeUp_0.6s_0.2s_ease_both] opacity-0 [animation-fill-mode:both]"
+            style={{ textShadow: "0 2px 12px rgba(0,0,0,0.4)" }}>
             שאלון היכרות קהילתי
           </h1>
-          <p className="text-gray-400 text-sm mt-2 font-medium tracking-wide">
-            קהילת חב״ד רמת בית שמש ג׳
+          <p className="mt-2 text-sm font-medium tracking-widest animate-[fadeUp_0.6s_0.4s_ease_both] opacity-0 [animation-fill-mode:both]"
+            style={{ color: "rgba(204,127,24,0.85)" }}>
+            קהילת חב״ד — רמת בית שמש ג׳
           </p>
+
+          {/* Bottom ornament */}
+          <div className="flex items-center justify-center gap-2 mt-4 animate-[fadeIn_0.8s_0.6s_ease_both] opacity-0 [animation-fill-mode:both]">
+            <div className="h-px w-8 bg-white/20" />
+            <div className="w-1.5 h-1.5 rounded-full bg-amber-400/50" />
+            <div className="h-px w-16 bg-white/20" />
+            <div className="w-1.5 h-1.5 rounded-full bg-amber-400/50" />
+            <div className="h-px w-8 bg-white/20" />
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} noValidate>
@@ -271,36 +330,36 @@ export default function CommunityForm() {
             </div>
             <div className="mt-4">
               <label className={lbl}>מין <span className="text-red-500">*</span></label>
-              <div className="flex gap-6 mt-1">
-                {["זכר", "נקבה"].map(g => (
-                  <label key={g} className="flex items-center gap-2.5 cursor-pointer group">
-                    <div onClick={() => setGender(g)}
-                      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${gender === g ? "border-[#511C24] bg-[#511C24]" : "border-gray-300 group-hover:border-[#511C24]"}`}>
-                      {gender === g && <div className="w-2 h-2 rounded-full bg-white" />}
-                    </div>
-                    <span className="text-sm font-medium" onClick={() => setGender(g)}>{g}</span>
-                  </label>
-                ))}
-              </div>
+              <RadioGroup name="gender" value={gender} onChange={setGender} />
             </div>
           </div>
 
-          {/* Section 1b — Spouse */}
+          {/* Section 2 — Spouse */}
           <div className={`${card} animate-[fadeUp_0.5s_0.15s_ease_both]`}>
             <h2 className={sectionTitle} style={{ color: "#511C24" }}>בן / בת זוג</h2>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className={lbl}>שם מלא <span className="text-red-500">*</span></label>
-                <input type="text" value={spouseName} onChange={e => setSpouseName(e.target.value)} className={inp} placeholder="שם מלא" />
+
+            <label className="flex items-center gap-3 mb-4 cursor-pointer select-none group" onClick={() => setNoSpouse(!noSpouse)}>
+              <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all duration-200 shrink-0 ${noSpouse ? "bg-[#511C24] border-[#511C24]" : "border-gray-300 group-hover:border-[#511C24]"}`}>
+                {noSpouse && <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 10 8"><path d="M1 4l3 3 5-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
               </div>
-              <div>
-                <label className={lbl}>טלפון <span className="text-red-500">*</span></label>
-                <input type="tel" value={spousePhone} onChange={e => setSpousePhone(e.target.value)} className={inp} placeholder="050-0000000" dir="ltr" />
+              <span className="text-sm font-medium text-gray-600">אין לי בן / בת זוג</span>
+            </label>
+
+            {!noSpouse && (
+              <div className="grid grid-cols-2 gap-4 animate-[fadeUp_0.3s_ease_both]">
+                <div>
+                  <label className={lbl}>שם מלא <span className="text-red-500">*</span></label>
+                  <input type="text" value={spouseName} onChange={e => setSpouseName(e.target.value)} className={inp} placeholder="שם מלא" />
+                </div>
+                <div>
+                  <label className={lbl}>טלפון <span className="text-red-500">*</span></label>
+                  <input type="tel" value={spousePhone} onChange={e => setSpousePhone(e.target.value)} className={inp} placeholder="050-0000000" dir="ltr" />
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
-          {/* Section 2 — Birthday */}
+          {/* Section 3 — Birthday */}
           <div className={`${card} animate-[fadeUp_0.5s_0.2s_ease_both]`}>
             <h2 className={sectionTitle} style={{ color: "#511C24" }}>תאריך לידה</h2>
             <BirthdaySection
@@ -310,22 +369,23 @@ export default function CommunityForm() {
             />
           </div>
 
-          {/* Section 3 — Children */}
+          {/* Section 4 — Children */}
           <div className={`${card} animate-[fadeUp_0.5s_0.25s_ease_both]`}>
             <h2 className={sectionTitle} style={{ color: "#511C24" }}>ילדים</h2>
-            <div className="flex flex-col items-center gap-1">
+            <div className="flex flex-col items-center gap-2">
               <label className={lbl}>כמה ילדים?</label>
               <Stepper value={numChildren} onChange={handleNumChildren} />
             </div>
 
             {children.map((child, i) => (
-              <div key={i} className="mt-5 animate-[fadeUp_0.35s_ease_both]">
+              <div key={i} className="mt-6 animate-[fadeUp_0.35s_ease_both]">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="flex-1 h-px bg-[#511C24]/20" />
-                  <span className="text-xs font-bold tracking-widest text-[#511C24] bg-[#511C24]/8 px-3 py-1 rounded-full whitespace-nowrap">
-                    ילד/ה {i + 1}
+                  <div className="flex-1 h-0.5 rounded-full" style={{ background: "linear-gradient(to left, transparent, #511C2433)" }} />
+                  <span className="text-xs font-bold tracking-widest px-4 py-1.5 rounded-full text-white whitespace-nowrap"
+                    style={{ background: "linear-gradient(135deg, #511C24, #8E3040)" }}>
+                    ✦ ילד/ה {i + 1}
                   </span>
-                  <div className="flex-1 h-px bg-[#511C24]/20" />
+                  <div className="flex-1 h-0.5 rounded-full" style={{ background: "linear-gradient(to right, transparent, #511C2433)" }} />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -339,50 +399,37 @@ export default function CommunityForm() {
                 </div>
                 <div className="mt-3">
                   <label className={lbl}>מין <span className="text-red-500">*</span></label>
-                  <div className="flex gap-6 mt-1">
-                    {["זכר", "נקבה"].map(g => (
-                      <label key={g} className="flex items-center gap-2.5 cursor-pointer group">
-                        <div onClick={() => updateChild(i, "gender", g)}
-                          className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${child.gender === g ? "border-[#511C24] bg-[#511C24]" : "border-gray-300 group-hover:border-[#511C24]"}`}>
-                          {child.gender === g && <div className="w-2 h-2 rounded-full bg-white" />}
-                        </div>
-                        <span className="text-sm font-medium" onClick={() => updateChild(i, "gender", g)}>{g}</span>
-                      </label>
-                    ))}
-                  </div>
+                  <RadioGroup name={`cg-${i}`} value={child.gender} onChange={v => updateChild(i, "gender", v)} />
                 </div>
                 <div className="mt-3">
                   <BirthdaySection
-                    onlyGregorian={child.onlyGregorian}
-                    setOnlyGregorian={v => updateChild(i, "onlyGregorian", v)}
-                    gregorian={child.birthdayGregorian}
-                    setGregorian={v => updateChild(i, "birthdayGregorian", v)}
-                    hebrew={child.hebrew}
-                    setHebrew={v => updateChild(i, "hebrew", v)}
+                    label="תאריך לידה"
+                    onlyGregorian={child.onlyGregorian} setOnlyGregorian={v => updateChild(i, "onlyGregorian", v)}
+                    gregorian={child.birthdayGregorian} setGregorian={v => updateChild(i, "birthdayGregorian", v)}
+                    hebrew={child.hebrew} setHebrew={v => updateChild(i, "hebrew", v)}
                   />
                 </div>
               </div>
             ))}
           </div>
 
-          {/* Section 4 — Yahrzeits */}
+          {/* Section 5 — Yahrzeits */}
           <div className={`${card} animate-[fadeUp_0.5s_0.3s_ease_both]`}>
             <h2 className={sectionTitle} style={{ color: "#511C24" }}>יארצייטים</h2>
             <p className="text-sm text-gray-500 text-center mb-5">
               הוסף יארצייטים של בני משפחה או אנשים קרובים
-              <br />
-              <span className="text-xs text-gray-400">יתווספו ללוח התאריכים הקהילתי</span>
+              <br/><span className="text-xs text-gray-400">יתווספו ללוח התאריכים הקהילתי</span>
             </p>
 
             {yahrzeits.map((y, i) => (
-              <div key={i} className="relative mb-4 animate-[fadeUp_0.3s_ease_both]">
+              <div key={i} className="mb-5 animate-[fadeUp_0.3s_ease_both]">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="flex-1 h-px bg-gray-200" />
-                  <span className="text-xs font-bold tracking-widest text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
-                    יארצייט {i + 1}
-                  </span>
-                  <button type="button" onClick={() => setYahrzeits(prev => prev.filter((_, idx) => idx !== i))}
-                    className="text-gray-300 hover:text-red-400 transition-colors duration-200 text-xl leading-none">×</button>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold tracking-widest text-gray-500 bg-gray-100 px-3 py-1 rounded-full">יארצייט {i + 1}</span>
+                    <button type="button" onClick={() => setYahrzeits(prev => prev.filter((_, idx) => idx !== i))}
+                      className="text-gray-300 hover:text-red-400 transition-colors duration-200 text-xl leading-none">×</button>
+                  </div>
                   <div className="flex-1 h-px bg-gray-200" />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
@@ -400,19 +447,17 @@ export default function CommunityForm() {
                 </div>
                 <div className="mt-3">
                   <BirthdaySection
-                    onlyGregorian={y.onlyGregorian}
-                    setOnlyGregorian={v => updateYahrzeit(i, "onlyGregorian", v)}
-                    gregorian={y.dateGregorian}
-                    setGregorian={v => updateYahrzeit(i, "dateGregorian", v)}
-                    hebrew={y.hebrew}
-                    setHebrew={v => updateYahrzeit(i, "hebrew", v)}
+                    label="תאריך יארצייט"
+                    onlyGregorian={y.onlyGregorian} setOnlyGregorian={v => updateYahrzeit(i, "onlyGregorian", v)}
+                    gregorian={y.dateGregorian} setGregorian={v => updateYahrzeit(i, "dateGregorian", v)}
+                    hebrew={y.hebrew} setHebrew={v => updateYahrzeit(i, "hebrew", v)}
                   />
                 </div>
               </div>
             ))}
 
             <button type="button" onClick={() => setYahrzeits(prev => [...prev, emptyYahrzeit()])}
-              className="mt-3 flex items-center gap-2 text-sm font-semibold px-4 py-3 rounded-xl border-2 border-dashed border-gray-300 text-gray-500 hover:border-[#511C24] hover:text-[#511C24] transition-all duration-200 w-full justify-center group">
+              className="mt-2 flex items-center gap-2 text-sm font-semibold px-4 py-3 rounded-xl border-2 border-dashed border-gray-300 text-gray-500 hover:border-[#511C24] hover:text-[#511C24] transition-all duration-200 w-full justify-center group">
               <span className="text-lg group-hover:scale-125 transition-transform duration-200">+</span>
               הוסף יארצייט
             </button>
