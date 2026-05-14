@@ -11,6 +11,7 @@ const FIELDS = {
   address: "fldoGCdq19kyYtXw7",
   gender: "fldQuGYA7NQKVLNDX",
   spouseText: "fldVvVWskD7n9ZE0M",
+  spouseLinked: "fldgGviQX8PFR1k9U",
   children: "fldgXNSfmHItGagpL",
   parents: "fld4JSKbje2UG0iNH",
   calendarLink: "fldOqIQ2zybXI6K57",
@@ -73,6 +74,7 @@ export async function upsertMember(data: {
   address: string;
   gender: string;
   spouseName: string;
+  spousePhone?: string;
 }): Promise<string> {
   const existing = await findMember(data.phone, data.email);
   const fields: Record<string, string> = {
@@ -84,6 +86,12 @@ export async function upsertMember(data: {
   if (data.address) fields[FIELDS.address] = data.address;
   if (data.gender) fields[FIELDS.gender] = data.gender;
   if (data.spouseName) fields[FIELDS.spouseText] = data.spouseName;
+  if (data.spousePhone) {
+    const spouseId = await findMember(data.spousePhone, "");
+    if (spouseId) {
+      (fields as Record<string, unknown>)[FIELDS.spouseLinked] = [spouseId];
+    }
+  }
   fields[FIELDS.filledQuestionnaire] = new Date().toISOString().split("T")[0];
 
   if (existing) {

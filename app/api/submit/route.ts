@@ -13,6 +13,7 @@ export async function POST(req: NextRequest) {
       address: data.address,
       gender: data.gender,
       spouseName: data.spouseName,
+      spousePhone: data.spousePhone,
     });
 
     if (data.birthdayGregorian || data.hebrewDay) {
