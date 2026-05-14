@@ -48,6 +48,12 @@ const lbl = "block text-sm font-semibold text-gray-700 mb-1.5";
 const card = "bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-5 transition-shadow duration-300 hover:shadow-md";
 const sectionTitle = "text-xl font-bold text-center mb-6 pb-3 border-b border-gray-100";
 
+function byGender(gender: string, male: string, female: string, neutral: string) {
+  if (gender === "זכר") return male;
+  if (gender === "נקבה") return female;
+  return neutral;
+}
+
 function RadioGroup({ name, value, onChange }: { name: string; value: string; onChange: (v: string) => void }) {
   return (
     <div className="flex gap-6 mt-1">
@@ -91,8 +97,9 @@ function HebrewDateFields({ value, onChange }: { value: HebrewDate; onChange: (v
   );
 }
 
-function BirthdaySection({ label = "תאריך לידה", onlyGregorian, setOnlyGregorian, gregorian, setGregorian, hebrew, setHebrew }: {
+function BirthdaySection({ label = "תאריך לידה", onlyGregorian, setOnlyGregorian, gregorian, setGregorian, hebrew, setHebrew, knowText = "אני יודע/ת רק את התאריך הלועזי" }: {
   label?: string;
+  knowText?: string;
   onlyGregorian: boolean; setOnlyGregorian: (v: boolean) => void;
   gregorian: string; setGregorian: (v: string) => void;
   hebrew: HebrewDate; setHebrew: (v: HebrewDate) => void;
@@ -115,7 +122,7 @@ function BirthdaySection({ label = "תאריך לידה", onlyGregorian, setOnly
         <div className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all duration-200 shrink-0 ${onlyGregorian ? "bg-[#511C24] border-[#511C24]" : "border-gray-400 group-hover:border-[#511C24]"}`}>
           {onlyGregorian && <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 10 8"><path d="M1 4l3 3 5-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
         </div>
-        <span className="text-sm text-gray-500">אני יודע/ת רק את התאריך הלועזי</span>
+        <span className="text-sm text-gray-500">{knowText}</span>
       </label>
     </div>
   );
@@ -336,13 +343,17 @@ export default function CommunityForm() {
 
           {/* Section 2 — Spouse */}
           <div className={`${card} animate-[fadeUp_0.5s_0.15s_ease_both]`}>
-            <h2 className={sectionTitle} style={{ color: "#511C24" }}>בן / בת זוג</h2>
+            <h2 className={sectionTitle} style={{ color: "#511C24" }}>
+              {byGender(gender, "בת זוג", "בן זוג", "בן / בת זוג")}
+            </h2>
 
             <label className="flex items-center gap-3 mb-4 cursor-pointer select-none group" onClick={() => setNoSpouse(!noSpouse)}>
               <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all duration-200 shrink-0 ${noSpouse ? "bg-[#511C24] border-[#511C24]" : "border-gray-300 group-hover:border-[#511C24]"}`}>
                 {noSpouse && <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 10 8"><path d="M1 4l3 3 5-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
               </div>
-              <span className="text-sm font-medium text-gray-600">אין לי בן / בת זוג</span>
+              <span className="text-sm font-medium text-gray-600">
+                {byGender(gender, "אין לי בת זוג", "אין לי בן זוג", "אין לי בן / בת זוג")}
+              </span>
             </label>
 
             {!noSpouse && (
@@ -366,6 +377,7 @@ export default function CommunityForm() {
               onlyGregorian={onlyGregorian} setOnlyGregorian={setOnlyGregorian}
               gregorian={birthdayGregorian} setGregorian={setBirthdayGregorian}
               hebrew={hebrewBirthday} setHebrew={setHebrewBirthday}
+              knowText={byGender(gender, "אני יודע רק את התאריך הלועזי", "אני יודעת רק את התאריך הלועזי", "אני יודע/ת רק את התאריך הלועזי")}
             />
           </div>
 
@@ -373,7 +385,7 @@ export default function CommunityForm() {
           <div className={`${card} animate-[fadeUp_0.5s_0.25s_ease_both]`}>
             <h2 className={sectionTitle} style={{ color: "#511C24" }}>ילדים</h2>
             <div className="flex flex-col items-center gap-2">
-              <label className={lbl}>כמה ילדים?</label>
+              <label className={lbl}>מספר ילדים</label>
               <Stepper value={numChildren} onChange={handleNumChildren} />
             </div>
 
